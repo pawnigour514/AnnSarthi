@@ -8,10 +8,13 @@
     "client"
   ],
   "scripts": {
-    "install:all": "npm install && cd server && npm install && cd ../client && npm install",
+    "dev": "./start-dev.sh",
     "dev:server": "cd server && npm run dev",
     "dev:client": "cd client && npm run dev",
+    "dev:ai": "cd ai-service && PYTHONPATH=. ./venv/bin/uvicorn app.main:app --port 8000 --reload",
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install",
     "seed": "cd server && npm run seed",
+    "test": "npm run test:server && npm run test:ai",
     "test:server": "cd server && npm test",
     "test:ai": "cd ai-service && (PYTHONPATH=. ./venv/bin/pytest app/tests || pytest app/tests)",
     "build:client": "cd client && npm run build"
