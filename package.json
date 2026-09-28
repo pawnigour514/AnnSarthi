@@ -1,0 +1,29 @@
+{
+  "name": "annsarthi-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AnnSarthi - Smart Food Waste Redistribution Ecosystem (SIH26234)",
+  "workspaces": [
+    "server",
+    "client"
+  ],
+  "scripts": {
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install",
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "seed": "cd server && npm run seed",
+    "test:server": "cd server && npm test",
+    "test:ai": "cd ai-service && (PYTHONPATH=. ./venv/bin/pytest app/tests || pytest app/tests)",
+    "build:client": "cd client && npm run build"
+  },
+  "keywords": [
+    "food-waste",
+    "redistribution",
+    "sih26234",
+    "smart-india-hackathon",
+    "ai",
+    "logistics"
+  ],
+  "author": "AnnSarthi Team",
+  "license": "ISC"
+}

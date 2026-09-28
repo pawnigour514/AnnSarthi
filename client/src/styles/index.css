@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-brand-primary: #16A34A;
+    --color-brand-hover: #15803D;
+    --color-brand-deep: #14532D;
+    --color-surface-bg: #FFFFFF;
+    --color-surface-subtle: #F6FBF7;
+    --color-surface-border: #E3EFE6;
+    --color-text-primary: #0F1F14;
+    --color-text-secondary: #4B5F52;
+  }
+
+  body {
+    background-color: #FFFFFF;
+    color: #0F1F14;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: #14532D;
+    letter-spacing: -0.02em;
+  }
+
+  /* Accessibility focus indicator */
+  *:focus-visible {
+    outline: none;
+    ring: 2px;
+    ring-color: #16A34A;
+    ring-offset: 2px;
+    ring-offset-color: #FFFFFF;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F6FBF7;
+}
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Leaflet map container adjustments */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  border-radius: 0.75rem;
+  z-index: 10;
+}

@@ -1,0 +1,125 @@
+import { ConflictError } from './errors.js';
+
+export const DONATION_STATUS = {
+  DRAFT: 'DRAFT',
+  SUBMITTED: 'SUBMITTED',
+  SCREENING: 'SCREENING',
+  REVIEW_REQUIRED: 'REVIEW_REQUIRED',
+  VERIFIED: 'VERIFIED',
+  MATCHED: 'MATCHED',
+  PICKUP_ASSIGNED: 'PICKUP_ASSIGNED',
+  PICKED_UP: 'PICKED_UP',
+  IN_TRANSIT: 'IN_TRANSIT',
+  DELIVERED: 'DELIVERED',
+  COMPLETED: 'COMPLETED',
+  REJECTED: 'REJECTED',
+  CANCELLED: 'CANCELLED',
+};
+
+export const DELIVERY_STATUS = {
+  AVAILABLE: 'AVAILABLE',
+  ASSIGNED: 'ASSIGNED',
+  ACCEPTED: 'ACCEPTED',
+  PICKUP_STARTED: 'PICKUP_STARTED',
+  PICKED_UP: 'PICKED_UP',
+  IN_TRANSIT: 'IN_TRANSIT',
+  DELIVERED: 'DELIVERED',
+  FAILED: 'FAILED',
+};
+
+// Strict allowable transitions map for Donation
+export const DONATION_TRANSITIONS = {
+  [DONATION_STATUS.DRAFT]: [DONATION_STATUS.SUBMITTED, DONATION_STATUS.CANCELLED],
+  [DONATION_STATUS.SUBMITTED]: [
+    DONATION_STATUS.SCREENING,
+    DONATION_STATUS.REVIEW_REQUIRED,
+    DONATION_STATUS.VERIFIED,
+    DONATION_STATUS.CANCELLED,
+  ],
+  [DONATION_STATUS.SCREENING]: [
+    DONATION_STATUS.VERIFIED,
+    DONATION_STATUS.REVIEW_REQUIRED,
+    DONATION_STATUS.REJECTED,
+  ],
+  [DONATION_STATUS.REVIEW_REQUIRED]: [
+    DONATION_STATUS.VERIFIED,
+    DONATION_STATUS.REJECTED,
+    DONATION_STATUS.CANCELLED,
+    DONATION_STATUS.REVIEW_REQUIRED, // For Request Info / Hold updates
+  ],
+  [DONATION_STATUS.VERIFIED]: [
+    DONATION_STATUS.MATCHED,
+    DONATION_STATUS.PICKUP_ASSIGNED,
+    DONATION_STATUS.CANCELLED,
+  ],
+  [DONATION_STATUS.MATCHED]: [
+    DONATION_STATUS.PICKUP_ASSIGNED,
+    DONATION_STATUS.VERIFIED, // if unassigned/cancelled before pickup
+    DONATION_STATUS.CANCELLED,
+  ],
+  [DONATION_STATUS.PICKUP_ASSIGNED]: [
+    DONATION_STATUS.PICKED_UP,
+    DONATION_STATUS.MATCHED, // if driver drops out
+    DONATION_STATUS.CANCELLED,
+  ],
+  [DONATION_STATUS.PICKED_UP]: [DONATION_STATUS.IN_TRANSIT, DONATION_STATUS.REVIEW_REQUIRED],
+  [DONATION_STATUS.IN_TRANSIT]: [
+    DONATION_STATUS.DELIVERED,
+    DONATION_STATUS.REVIEW_REQUIRED, // if condition concern flagged
+  ],
+  [DONATION_STATUS.DELIVERED]: [DONATION_STATUS.COMPLETED, DONATION_STATUS.REVIEW_REQUIRED],
+  [DONATION_STATUS.COMPLETED]: [], // Terminal state
+  [DONATION_STATUS.REJECTED]: [], // Terminal state
+  [DONATION_STATUS.CANCELLED]: [], // Terminal state
+};
+
+// Strict allowable transitions map for Delivery
+export const DELIVERY_TRANSITIONS = {
+  [DELIVERY_STATUS.AVAILABLE]: [DELIVERY_STATUS.ASSIGNED, DELIVERY_STATUS.ACCEPTED, DELIVERY_STATUS.FAILED],
+  [DELIVERY_STATUS.ASSIGNED]: [
+    DELIVERY_STATUS.ACCEPTED,
+    DELIVERY_STATUS.AVAILABLE, // rejected by partner -> back to pool
+    DELIVERY_STATUS.FAILED,
+  ],
+  [DELIVERY_STATUS.ACCEPTED]: [
+    DELIVERY_STATUS.PICKUP_STARTED,
+    DELIVERY_STATUS.AVAILABLE,
+    DELIVERY_STATUS.FAILED,
+  ],
+  [DELIVERY_STATUS.PICKUP_STARTED]: [
+    DELIVERY_STATUS.PICKED_UP,
+    DELIVERY_STATUS.FAILED,
+  ],
+  [DELIVERY_STATUS.PICKED_UP]: [
+    DELIVERY_STATUS.IN_TRANSIT,
+    DELIVERY_STATUS.FAILED,
+  ],
+  [DELIVERY_STATUS.IN_TRANSIT]: [
+    DELIVERY_STATUS.DELIVERED,
+    DELIVERY_STATUS.FAILED,
+  ],
+  [DELIVERY_STATUS.DELIVERED]: [], // Terminal state
+  [DELIVERY_STATUS.FAILED]: [DELIVERY_STATUS.AVAILABLE], // re-dispatch allowable
+};
+
+/**
+ * Validates whether transition from currentState to targetState is legal.
+ * Throws 409 ConflictError if illegal.
+ */
+export function validateDonationTransition(currentStatus, nextStatus) {
+  const allowed = DONATION_TRANSITIONS[currentStatus] || [];
+  if (!allowed.includes(nextStatus)) {
+    throw new ConflictError(
+      `Illegal donation status transition from '${currentStatus}' to '${nextStatus}'. Allowed next states: [${allowed.join(', ')}]`
+    );
+  }
+}
+
+export function validateDeliveryTransition(currentStatus, nextStatus) {
+  const allowed = DELIVERY_TRANSITIONS[currentStatus] || [];
+  if (!allowed.includes(nextStatus)) {
+    throw new ConflictError(
+      `Illegal delivery status transition from '${currentStatus}' to '${nextStatus}'. Allowed next states: [${allowed.join(', ')}]`
+    );
+  }
+}
